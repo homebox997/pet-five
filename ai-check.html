@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Health Check | Pet Senior Care Hub</title>
+    <meta name="description" content="Free AI health check for senior dogs - arthritis, hip dysplasia, cataracts symptom assessment.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: #2c3e50; background: #fafafa; }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 18px; }
+        .header { background: linear-gradient(135deg, #fff5f0, #ffe0cc); padding: 1rem 0; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; }
+        .nav a { margin-left: 1rem; text-decoration: none; color: #2c3e50; font-weight: 600; padding: 7px 14px; border-radius: 30px; }
+        .nav a.highlight { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
+        .hero { background: linear-gradient(160deg, #fff5f0, #ffe8d6, #e8f8f5); padding: 3rem 0; text-align: center; }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .hero p { font-size: 1rem; color: #5a6c7d; }
+        .progress { padding: 1.5rem 0; background: white; }
+        .progress-bar { display: flex; gap: 0; margin-bottom: 0.5rem; }
+        .progress-step { flex: 1; height: 8px; background: #eee; }
+        .progress-step:first-child { border-radius: 10px 0 0 10px; }
+        .progress-step:last-child { border-radius: 0 10px 10px 0; }
+        .progress-step.active { background: linear-gradient(135deg, #ff6b6b, #ff8e53); }
+        .form-section { padding: 2rem 0 3rem; }
+        .form-card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1rem; }
+        .btn { display: inline-block; padding: 14px 28px; border-radius: 50px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
+        .btn-outline { background: white; color: #ff6b6b; border: 2px solid #ff6b6b; }
+        .footer { background: #2c3e50; color: white; padding: 3rem 0; text-align: center; }
+
+
+        /* Hamburger menu - hidden on desktop */
+        .hamburger { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #2c3e50; padding: 4px 10px; }
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: row; justify-content: space-between; align-items: center; position: relative; }
+            .hamburger { display: block; }
+            .nav { display: none; flex-direction: column; position: absolute; top: 100%; right: 0; left: 0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 1rem; gap: 0.5rem; z-index: 100; border-radius: 0 0 12px 12px; }
+            .nav.open { display: flex; }
+            .nav a { margin-left: 0; text-align: center; padding: 10px; width: 100%; }
+            .hero h1 { font-size: 1.8rem !important; }
+            .hero p { font-size: 0.95rem !important; }
+            .features-grid, .topics-grid { grid-template-columns: 1fr !important; }
+            .community-stats { flex-wrap: wrap; gap: 1rem !important; }
+            .stat-num { font-size: 1.5rem !important; }
+            .container { padding: 0 12px !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <div class="logo">Pet Senior Care Hub</div>
+                <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+                <nav class="nav">
+                    <a href="/">Home</a>
+                    <a href="/community.html">Community</a>
+                    <a href="/ai-check.html" class="highlight">AI Check</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>AI Health Check</h1>
+                <p>Free 3-step assessment for your senior dog's health</p>
+            </div>
+        </section>
+
+        <section class="progress">
+            <div class="container">
+                <div class="progress-bar">
+                    <div class="progress-step active" id="step1Bar"></div>
+                    <div class="progress-step" id="step2Bar"></div>
+                    <div class="progress-step" id="step3Bar"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #aaa;">
+                    <span id="step1Label">1. Basic Info</span>
+                    <span id="step2Label">2. Symptoms</span>
+                    <span id="step3Label">3. Get Result</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section">
+            <div class="container">
+                <div id="step1" class="form-card">
+                    <h2>Tell us about your dog</h2>
+                    <p style="color: #7a8a9a; margin-bottom: 1.5rem;">Basic information helps us give better advice</p>
+                    <div class="form-group">
+                        <label>Dog's Name</label>
+                        <input type="text" placeholder="e.g. Buddy" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Breed</label>
+                        <select required>
+                            <option value="">Select breed...</option>
+                            <option>Labrador</option>
+                            <option>Golden Retriever</option>
+                            <option>German Shepherd</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Age (years)</label>
+                        <input type="number" placeholder="e.g. 12" required>
+                    </div>
+                    <div style="text-align: right; margin-top: 1.5rem;">
+                        <button class="btn btn-primary" onclick="showStep(2)">Next Step</button>
+                    </div>
+                </div>
+
+                <div id="step2" class="form-card" style="display: none;">
+                    <h2>What symptoms have you noticed?</h2>
+                    <p style="color: #7a8a9a; margin-bottom: 1.5rem;">Select all that apply</p>
+                    <div class="form-group">
+                        <label><input type="checkbox"> Stiff or slow when walking</label><br>
+                        <label><input type="checkbox"> Difficulty going up/down stairs</label><br>
+                        <label><input type="checkbox"> Strugles to stand up after resting</label><br>
+                        <label><input type="checkbox"> Bumping into furniture (vision issues)</label>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+                        <button class="btn btn-outline" onclick="showStep(1)">Previous</button>
+                        <button class="btn btn-primary" onclick="showStep(3)">Next Step</button>
+                    </div>
+                </div>
+
+                <div id="step3" class="form-card" style="display: none;">
+                    <h2>Get your health report</h2>
+                    <p style="color: #7a8a9a; margin-bottom: 1.5rem;">We'll send a detailed assessment to your email</p>
+                    <div class="form-group">
+                        <label>Your Email</label>
+                        <input type="email" placeholder="you@example.com" required>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1.5rem;">
+                        <button class="btn btn-outline" onclick="showStep(2)">Previous</button>
+                        <button class="btn btn-primary" onclick="submitForm()">Submit & Get Report</button>
+                    </div>
+                </div>
+
+                <div id="result" style="display: none; background: linear-gradient(135deg, #fff5f0, #ffe8d6); padding: 2rem; border-radius: 20px; text-align: center;">
+                    <h2>Assessment Complete!</h2>
+                    <p style="margin: 1rem 0;">Thank you! Your health assessment has been submitted.</p>
+                    <p style="color: #7a8a9a;">We'll send the detailed report to your email within 24 hours.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Pet Senior Care Hub</p>
+        </div>
+    </footer>
+
+    <script>
+        function showStep(step) {
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'none';
+            document.getElementById('step3').style.display = 'none';
+            document.getElementById('result').style.display = 'none';
+            
+            if (step <= 3) {
+                document.getElementById('step' + step).style.display = 'block';
+            } else {
+                document.getElementById('result').style.display = 'block';
+            }
+            
+            for (let i = 1; i <= 3; i++) {
+                const bar = document.getElementById('step' + i + 'Bar');
+                const label = document.getElementById('step' + i + 'Label');
+                bar.classList.remove('active');
+                label.style.color = '#aaa';
+                if (i <= step && step <= 3) {
+                    bar.classList.add('active');
+                    label.style.color = '#ff6b6b';
+                }
+            }
+        }
+        
+        function submitForm() {
+            showStep(4);
+        }
+    </script>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.nav').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
