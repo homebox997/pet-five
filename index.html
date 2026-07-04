@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Senior Care Hub | Senior Dog Health</title>
+    <meta name="description" content="Senior dog health support - AI powered pet community for arthritis, hip dysplasia, and cataracts.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: #2c3e50; background: #fafafa; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 18px; }
+        
+        /* Header */
+        .header { background: rgba(255, 255, 255, 0.95); padding: 1rem 0; position: fixed; width: 100%; top: 0; z-index: 1000; box-shadow: 0 2px 20px rgba(0,0,0,0.08); }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #ff6b6b, #ff8e53); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav a { margin-left: 1rem; text-decoration: none; color: #2c3e50; font-weight: 600; padding: 8px 16px; border-radius: 25px; transition: all 0.3s; }
+        .nav a:hover { background: #f5f5f5; }
+        .nav a.highlight { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
+        
+        /* Hamburger Menu */
+        .hamburger { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #2c3e50; padding: 4px 10px; }
+        
+        /* Hero with Wave Animation */
+        .hero { 
+            background: linear-gradient(160deg, #fff5f0, #ffe8d6, #e8f8f5, #f0e6ff); 
+            padding: 8rem 0 4rem; 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
+            animation: waveMove 15s ease-in-out infinite;
+        }
+        @keyframes waveMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; position: relative; z-index: 1; }
+        .hero p { font-size: 1.2rem; color: #5a6c7d; margin-bottom: 2rem; position: relative; z-index: 1; }
+        
+        /* Buttons with Gradient */
+        .btn { display: inline-block; padding: 16px 32px; border-radius: 50px; font-weight: 700; text-decoration: none; margin: 0.5rem; position: relative; z-index: 1; transition: all 0.3s; }
+        .btn-primary { 
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53, #ff6b6b); 
+            background-size: 200% 200%; 
+            color: white; 
+            animation: gradientMove 3s ease infinite; 
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4); }
+        .btn-secondary { 
+            background: linear-gradient(135deg, #667eea, #764ba2, #667eea); 
+            background-size: 200% 200%; 
+            color: white; 
+            animation: gradientMove 3s ease infinite; 
+        }
+        .btn-secondary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4); }
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Petal-shaped Cards */
+        .features { padding: 4rem 0; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .feature-card { 
+            background: white; 
+            padding: 2.5rem; 
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+            transition: all 0.4s; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.05) 0%, transparent 70%);
+            transition: all 0.4s;
+        }
+        .feature-card:hover::before { top: -20%; left: -20%; }
+        .feature-card:hover { transform: translateY(-8px); box-shadow: 0 16px 48px rgba(0,0,0,0.15); }
+        .feature-card h3 { font-size: 1.4rem; margin: 1rem 0; color: #2c3e50; }
+        .feature-card p { color: #5a6c7d; line-height: 1.6; }
+        .feature-icon { font-size: 3rem; margin-bottom: 1rem; }
+        
+        /* Topics Section */
+        .topics { padding: 4rem 0; background: linear-gradient(135deg, #f5f7fa, #c3cfe2); }
+        .topics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .topic-card { 
+            background: white; 
+            padding: 2rem; 
+            border-radius: 20px; 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); 
+            transition: all 0.3s; 
+            cursor: pointer; 
+        }
+        .topic-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .topic-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: #2c3e50; }
+        .topic-card p { color: #5a6c7d; font-size: 0.95rem; }
+        
+        /* Blog Preview */
+        .blog-preview { padding: 4rem 0; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+        .blog-card { 
+            background: white; 
+            border-radius: 20px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08); 
+            transition: all 0.3s; 
+        }
+        .blog-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .blog-image { height: 200px; background: linear-gradient(135deg, #ff6b6b, #ff8e53); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+        .blog-content { padding: 1.5rem; }
+        .blog-content h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .blog-content p { color: #5a6c7d; font-size: 0.9rem; }
+        
+        /* Community Stats */
+        .community-stats { display: flex; justify-content: center; gap: 3rem; margin: 2rem 0; padding: 2rem; background: white; border-radius: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .stat { text-align: center; }
+        .stat-num { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #ff6b6b, #ff8e53); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .stat-label { color: #5a6c7d; font-size: 0.9rem; }
+        
+        /* Footer */
+        .footer { background: #2c3e50; color: white; padding: 3rem 0; text-align: center; }
+        .footer a { color: #ff8e53; text-decoration: none; }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: row; justify-content: space-between; align-items: center; position: relative; }
+            .hamburger { display: block; }
+            .nav { display: none; flex-direction: column; position: absolute; top: 100%; right: 0; left: 0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 1rem; gap: 0.5rem; z-index: 100; border-radius: 0 0 12px 12px; }
+            .nav.open { display: flex; }
+            .nav a { margin-left: 0; text-align: center; padding: 10px; width: 100%; }
+            .hero h1 { font-size: 2rem !important; }
+            .hero p { font-size: 1rem !important; }
+            .features-grid, .topics-grid, .blog-grid { grid-template-columns: 1fr !important; }
+            .community-stats { flex-wrap: wrap; gap: 1rem !important; }
+            .stat-num { font-size: 1.5rem !important; }
+            .container { padding: 0 12px !important; }
+            .feature-card { border-radius: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <div class="logo">Pet Senior Care Hub</div>
+                <button class="hamburger" onclick="toggleMenu()">☰</button>
+                <nav class="nav" id="navMenu">
+                    <a href="/">Home</a>
+                    <a href="/community.html">Community</a>
+                    <a href="/ai-check.html">AI Check</a>
+                    <a href="/blog.html">Blog</a>
+                    <a href="/community.html" class="highlight">Join Free</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>🐾 Senior Dog Health Hub</h1>
+            <p>AI-powered community for pet parents facing arthritis, hip dysplasia & cataracts</p>
+            <a href="/community.html" class="btn btn-primary">Join Free Community</a>
+            <a href="/ai-check.html" class="btn btn-secondary">AI Health Check</a>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">Why Pet Parents Choose Us</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Health Check</h3>
+                    <p>Instant arthritis, hip & eye symptom analysis with personalized care recommendations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3>Real Community</h3>
+                    <p>Connect with 2,847+ pet parents sharing real experiences & proven solutions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3>Expert Articles</h3>
+                    <p>Daily blog posts on senior dog care, nutrition, supplements & pain management</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Topics -->
+    <section class="topics">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">Popular Topics</h2>
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <h3>🦴 Arthritis Management</h3>
+                    <p>Natural supplements, pain relief & mobility aids for joint health</p>
+                </div>
+                <div class="topic-card">
+                    <h3>🦵 Hip Dysplasia</h3>
+                    <p>Early signs, surgical options & conservative management strategies</p>
+                </div>
+                <div class="topic-card">
+                    <h3>👁️ Cataracts & Vision</h3>
+                    <p>Causes, surgery costs & helping blind dogs adapt to home</p>
+                </div>
+                <div class="topic-card">
+                    <h3>🍖 Nutrition & Diet</h3>
+                    <p>Senior dog food, joint supplements & anti-inflammatory recipes</p>
+                </div>
+                <div class="topic-card">
+                    <h3>🏠 Home Modifications</h3>
+                    <p>Ramps, orthopedic beds & safe flooring for mobility-challenged dogs</p>
+                </div>
+                <div class="topic-card">
+                    <h3>💊 Medications & Supplements</h3>
+                    <p>Glucosamine, CBD oil, NSAIDs & what actually works (with real reviews)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Preview -->
+    <section class="blog-preview">
+        <div class="container">
+            <h2 style="text-align: center; font-size: 2rem; margin-bottom: 2rem;">Latest Articles</h2>
+            <div class="blog-grid">
+                <div class="blog-card">
+                    <div class="blog-image">🦴</div>
+                    <div class="blog-content">
+                        <h3>Complete Arthritis Care Guide</h3>
+                        <p>10 chapters covering supplements, exercise & pain management...</p>
+                        <a href="/blog-arthritis-guide.html" style="color: #ff6b6b; font-weight: 600;">Read More →</a>
+                    </div>
+                </div>
+                <div class="blog-card">
+                    <div class="blog-image">🦵</div>
+                    <div class="blog-content">
+                        <h3>Hip Dysplasia: Early Signs</h3>
+                        <p>How to spot hip dysplasia before it's too late...</p>
+                        <a href="/blog.html" style="color: #ff6b6b; font-weight: 600;">Read More →</a>
+                    </div>
+                </div>
+                <div class="blog-card">
+                    <div class="blog-image">👁️</div>
+                    <div class="blog-content">
+                        <h3>Cataracts in Senior Dogs</h3>
+                        <p>When is surgery necessary? Costs & recovery tips...</p>
+                        <a href="/blog.html" style="color: #ff6b6b; font-weight: 600;">Read More →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Stats -->
+    <section class="features">
+        <div class="container">
+            <div class="community-stats">
+                <div class="stat">
+                    <div class="stat-num">2,847</div>
+                    <div class="stat-label">Community Members</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">1,293</div>
+                    <div class="stat-label">Arthritis Topics</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">856</div>
+                    <div class="stat-label">Hip Dysplasia Posts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">524</div>
+                    <div class="stat-label">Cataract Discussions</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>© 2026 Pet Senior Care Hub. Helping senior dogs live their best life.</p>
+            <p style="margin-top: 1rem;">
+                <a href="/">Home</a> · 
+                <a href="/community.html">Community</a> · 
+                <a href="/ai-check.html">AI Check</a> · 
+                <a href="/blog.html">Blog</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const nav = document.getElementById('navMenu');
+            nav.classList.toggle('open');
+        }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const nav = document.getElementById('navMenu');
+            const hamburger = document.querySelector('.hamburger');
+            if (!nav.contains(event.target) && !hamburger.contains(event.target)) {
+                nav.classList.remove('open');
+            }
+        });
+    </script>
+</body>
+</html>
