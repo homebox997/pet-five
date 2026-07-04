@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin | Pet Senior Care Hub</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: #2c3e50; background: #f5f2ef; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 18px; }
+
+        /* Setup Screen */
+        #setup-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .setup-card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); max-width: 420px; width: 100%; }
+        .setup-card h1 { text-align: center; font-size: 1.3rem; margin-bottom: 1.5rem; }
+        .setup-card label { display: block; font-weight: 600; font-size: 0.9rem; margin: 0.8rem 0 0.3rem; }
+        .setup-card input { width: 100%; padding: 10px 14px; border: 2px solid #eee; border-radius: 10px; font-size: 0.95rem; }
+        .setup-card input:focus { outline: none; border-color: #ff6b6b; }
+        .setup-card .note { font-size: 0.8rem; color: #aaa; margin: 0.5rem 0 0.3rem; }
+        .setup-card .local-btn { background: none; border: 2px solid #ddd; color: #666; padding: 10px; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 1rem; font-size: 0.9rem; }
+        .setup-card .local-btn:hover { border-color: #999; }
+
+        /* Login Screen */
+        #login-screen { display: none; align-items: center; justify-content: center; min-height: 100vh; }
+        .login-card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); max-width: 380px; width: 100%; text-align: center; }
+        .login-card h1 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .login-card p { color: #7a8a9a; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .login-card input { width: 100%; padding: 10px 14px; border: 2px solid #eee; border-radius: 10px; font-size: 0.95rem; margin-bottom: 1rem; }
+        .login-card input:focus { outline: none; border-color: #ff6b6b; }
+        .login-card .error { color: #e74c3c; font-size: 0.85rem; margin-bottom: 0.5rem; display: none; }
+
+        /* Buttons */
+        .btn { display: inline-block; padding: 10px 22px; border-radius: 50px; font-weight: 700; border: none; cursor: pointer; text-decoration: none; font-size: 0.9rem; }
+        .btn-primary { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background: white; color: #ff6b6b; border: 2px solid #ff6b6b; }
+        .btn-outline:hover { background: #fff5f0; }
+        .btn-secondary { background: #f0f0f0; color: #333; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; }
+        .btn-xs { padding: 4px 10px; font-size: 0.75rem; }
+
+        /* Admin Layout */
+        #admin-app { display: none; }
+        .admin-header { background: white; padding: 1rem 0; border-bottom: 1px solid #e5e0db; }
+        .admin-header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .admin-logo { font-weight: 800; font-size: 1.1rem; }
+        .admin-logo span { color: #ff6b6b; }
+        .admin-user { display: flex; align-items: center; gap: 1rem; }
+        .admin-user .status { font-size: 0.8rem; color: #27ae60; }
+        .admin-user .status.offline { color: #e74c3c; }
+
+        .admin-body { display: flex; min-height: calc(100vh - 60px); }
+        .admin-sidebar { width: 200px; background: white; border-right: 1px solid #e5e0db; padding: 1rem 0; flex-shrink: 0; }
+        .admin-sidebar a { display: block; padding: 10px 20px; text-decoration: none; color: #555; font-weight: 600; font-size: 0.9rem; }
+        .admin-sidebar a:hover { background: #fff5f0; color: #ff6b6b; }
+        .admin-sidebar a.active { background: #fff5f0; color: #ff6b6b; border-right: 3px solid #ff6b6b; }
+        .admin-main { flex: 1; padding: 2rem; }
+
+        /* Stats cards */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: white; padding: 1.2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: #ff6b6b; }
+        .stat-card .label { font-size: 0.8rem; color: #7a8a9a; }
+
+        /* Table */
+        .table-wrap { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 1.5rem; border-bottom: 1px solid #f0ece8; }
+        .table-header h2 { font-size: 1.1rem; }
+        .table-header .filters select { padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; margin-left: 0.5rem; }
+        .table-header .filters input { padding: 6px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; width: 180px; margin-left: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f5f0eb; font-size: 0.9rem; }
+        th { background: #faf8f6; font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: #7a8a9a; }
+        td .tag { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .tag-arthritis { background: #fff0eb; color: #ff6b6b; }
+        .tag-hip { background: #efe5fa; color: #764ba2; }
+        .tag-cataracts { background: #e5f0ff; color: #4a9eff; }
+        .featured-star { color: #f39c12; }
+        td .actions { display: flex; gap: 0.4rem; }
+        .empty-state { text-align: center; padding: 3rem; color: #aaa; }
+        .empty-state .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+        /* Editor modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: flex-start; padding: 2rem; overflow-y: auto; }
+        .modal-overlay.open { display: flex; }
+        .modal { background: white; border-radius: 20px; width: 100%; max-width: 720px; padding: 2rem; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .modal h2 { font-size: 1.2rem; margin-bottom: 1.2rem; }
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .modal input, .modal select, .modal textarea { width: 100%; padding: 10px 14px; border: 2px solid #eee; border-radius: 10px; font-size: 0.9rem; font-family: inherit; }
+        .modal input:focus, .modal select:focus, .modal textarea:focus { outline: none; border-color: #ff6b6b; }
+        .modal textarea { min-height: 300px; resize: vertical; line-height: 1.6; font-size: 0.85rem; font-family: 'Consolas', monospace; }
+        .modal .form-actions { display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.2rem; }
+
+        /* Affiliate links section */
+        .link-list { }
+        .link-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1rem; background: #faf8f6; border-radius: 8px; margin-bottom: 0.5rem; }
+        .link-item .info { flex: 1; }
+        .link-item .info .placeholder { font-weight: 700; font-size: 0.85rem; }
+        .link-item .info .anchor { font-size: 0.8rem; color: #7a8a9a; }
+        .link-item .info .url { font-size: 0.8rem; color: #4a9eff; word-break: break-all; }
+        .link-item .status-badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
+        .status-active { background: #e8f8f5; color: #27ae60; }
+        .status-inactive { background: #ffeaa7; color: #d68910; }
+        .link-actions { display: flex; gap: 0.3rem; }
+
+        /* Confirmation dialog */
+        .confirm-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 2000; justify-content: center; align-items: center; }
+        .confirm-overlay.open { display: flex; }
+        .confirm-box { background: white; padding: 2rem; border-radius: 16px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .confirm-box h3 { margin-bottom: 0.5rem; }
+        .confirm-box p { color: #7a8a9a; font-size: 0.9rem; margin-bottom: 1.2rem; }
+        .confirm-box .actions { display: flex; gap: 0.8rem; justify-content: center; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 2rem; right: 2rem; background: #2c3e50; color: white; padding: 12px 24px; border-radius: 12px; font-size: 0.9rem; z-index: 3000; opacity: 0; transform: translateY(20px); transition: opacity 0.3s, transform 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #27ae60; }
+        .toast.error { background: #e74c3c; }
+
+        @media (max-width: 768px) {
+            .admin-body { flex-direction: column; }
+            .admin-sidebar { width: 100%; display: flex; overflow-x: auto; padding: 0; border-right: none; border-bottom: 1px solid #e5e0db; }
+            .admin-sidebar a { white-space: nowrap; padding: 10px 14px; }
+            .admin-sidebar a.active { border-right: none; border-bottom: 3px solid #ff6b6b; }
+            .admin-main { padding: 1rem; }
+            .table-wrap { overflow-x: auto; }
+            .table-header { flex-direction: column; gap: 0.8rem; align-items: stretch; }
+            .table-header .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+            .table-header .filters input { width: 100%; }
+            .modal-overlay { padding: 1rem; }
+            .modal { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div id="setup-screen">
+    <div class="setup-card">
+        <h1>&#128295; Pet Senior Care Hub</h1>
+        <p style="text-align:center;color:#7a8a9a;font-size:0.85rem;margin-bottom:1.5rem;">Content Management System</p>
+
+        <label>Supabase Project URL</label>
+        <input id="supabase-url" placeholder="https://xxx.supabase.co" value="">
+
+        <label>Supabase Anon Key</label>
+        <input id="supabase-key" placeholder="eyJhbGciOi..." value="">
+
+        <div class="note">Get these from Supabase Dashboard > Settings > API</div>
+
+        <button class="btn btn-primary" onclick="connectSupabase()" style="width:100%;margin-top:1rem;text-align:center;" id="connect-btn">Connect to Database</button>
+
+        <button class="local-btn" onclick="useLocal()">&#128190; Use Local Storage (Offline Mode)</button>
+        <div style="text-align:center;margin-top:1rem;font-size:0.8rem;color:#aaa;">Local mode saves data in your browser. Switch to Supabase anytime.</div>
+    </div>
+</div>
+
+<!-- Login Screen -->
+<div id="login-screen">
+    <div class="login-card">
+        <h1>&#128274; Admin Login</h1>
+        <p>Enter admin password to continue</p>
+        <input type="password" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+        <div class="error" id="login-error">Invalid password</div>
+        <button class="btn btn-primary" onclick="doLogin()" style="width:100%;">Login</button>
+        <div style="margin-top:1rem;font-size:0.85rem;color:#aaa;">Default: admin123</div>
+    </div>
+</div>
+
+<!-- Admin App -->
+<div id="admin-app">
+    <div class="admin-header">
+        <div class="container">
+            <div class="admin-header-inner">
+                <div class="admin-logo"><span>Pet Senior Care</span> Hub</div>
+                <div class="admin-user">
+                    <span class="status" id="db-status">&#9679; Database Connected</span>
+                    <span style="color:#aaa;font-size:0.85rem;" id="storage-label">Supabase</span>
+                    <a href="/" class="btn btn-secondary btn-sm" target="_blank">View Site</a>
+                    <button class="btn btn-secondary btn-sm" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-body">
+        <div class="admin-sidebar" id="admin-tabs">
+            <a href="#" class="active" data-tab="dashboard">&#128202; Dashboard</a>
+            <a href="#" data-tab="posts">&#128221; Articles</a>
+            <a href="#" data-tab="affiliates">&#128279; Affiliate Links</a>
+            <a href="#" data-tab="settings">&#9881; Settings</a>
+        </div>
+
+        <div class="admin-main" id="tab-content">
+
+            <!-- Dashboard Tab -->
+            <div class="tab-pane" id="tab-dashboard">
+                <div class="stats" id="stats-cards">
+                    <div class="stat-card"><div class="num" id="stat-total">0</div><div class="label">Total Articles</div></div>
+                    <div class="stat-card"><div class="num" id="stat-featured">0</div><div class="label">Featured</div></div>
+                    <div class="stat-card"><div class="num" id="stat-arthritis">0</div><div class="label">Arthritis</div></div>
+                    <div class="stat-card"><div class="num" id="stat-hip">0</div><div class="label">Hip Dysplasia</div></div>
+                    <div class="stat-card"><div class="num" id="stat-cataracts">0</div><div class="label">Cataracts</div></div>
+                    <div class="stat-card"><div class="num" id="stat-links">0</div><div class="label">Affiliate Links</div></div>
+                </div>
+
+                <div class="table-wrap">
+                    <div class="table-header"><h2>Recent Articles</h2></div>
+                    <div id="dashboard-posts-table">
+                        <div class="empty-state"><div class="icon">&#128221;</div><p>No articles yet. Create your first one!</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posts Tab -->
+            <div class="tab-pane" id="tab-posts" style="display:none;">
+                <div class="table-wrap">
+                    <div class="table-header">
+                        <h2>All Articles</h2>
+                        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+                            <div class="filters">
+                                <select id="filter-category" onchange="renderPosts()">
+                                    <option value="">All Categories</option>
+                                    <option value="arthritis">Arthritis</option>
+                                    <option value="hip-dysplasia">Hip Dysplasia</option>
+                                    <option value="cataracts">Cataracts</option>
+                                </select>
+                                <input id="filter-search" placeholder="Search..." oninput="renderPosts()">
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="openEditor()">+ New Article</button>
+                        </div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:30px;"></th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Links</th>
+                                <th style="width:180px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="posts-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Affiliates Tab -->
+            <div class="tab-pane" id="tab-affiliates" style="display:none;">
+                <div class="table-wrap">
+                    <div class="table-header">
+                        <h2>Affiliate Links</h2>
+                        <button class="btn btn-primary btn-sm" onclick="openAffiliateEditor()">+ New Link</button>
+                    </div>
+                    <div id="affiliates-list">
+                        <div class="empty-state"><div class="icon">&#128279;</div><p>No affiliate links yet.</p></div>
+                    </div>
+                </div>
+                <div style="margin-top:1.5rem;background:white;padding:1.5rem;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                    <h3 style="font-size:1rem;margin-bottom:0.8rem;">&#128161; How Affiliate Links Work</h3>
+                    <p style="font-size:0.9rem;color:#5a6c7d;line-height:1.6;">
+                        Write <code style="background:#f5f0eb;padding:2px 6px;border-radius:4px;">[aff:your-placeholder]</code> in your article content.
+                        The system automatically replaces these with live links.
+                        Add the placeholder and URL here &mdash; you can leave the URL blank initially
+                        and fill it in later when you have an affiliate partnership.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="tab-pane" id="tab-settings" style="display:none;">
+                <div class="table-wrap">
+                    <div class="table-header"><h2>Settings</h2></div>
+                    <div style="padding:1.5rem;">
+                        <div style="margin-bottom:1.5rem;">
+                            <h3 style="font-size:1rem;margin-bottom:0.5rem;">Data Source</h3>
+                            <p style="font-size:0.9rem;color:#5a6c7d;margin-bottom:0.5rem;" id="settings-db-status">Currently using: Local Storage</p>
+                            <button class="btn btn-outline btn-sm" onclick="changeDataSource()">Change Data Source</button>
+                        </div>
+                        <div style="margin-bottom:1.5rem;">
+                            <h3 style="font-size:1rem;margin-bottom:0.5rem;">Change Password</h3>
+                            <input type="password" id="settings-new-pass" placeholder="New password" style="padding:8px 12px;border:2px solid #eee;border-radius:8px;width:200px;">
+                            <button class="btn btn-secondary btn-sm" onclick="changePassword()" style="margin-left:0.5rem;">Update</button>
+                        </div>
+                        <div>
+                            <h3 style="font-size:1rem;margin-bottom:0.5rem;">Export Data</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="exportData()">Export All Data (JSON)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Editor Modal -->
+<div class="modal-overlay" id="editor-modal">
+    <div class="modal">
+        <h2 id="editor-title">New Article</h2>
+        <div class="form-group">
+            <label>Title</label>
+            <input id="editor-title-input" placeholder="Article title">
+        </div>
+        <div class="form-group">
+            <label>Slug (URL)</label>
+            <input id="editor-slug" placeholder="auto-generated-from-title" style="color:#aaa;">
+        </div>
+        <div class="form-group" style="display:flex;gap:1rem;">
+            <div style="flex:1;">
+                <label>Category</label>
+                <select id="editor-category">
+                    <option value="arthritis">Arthritis</option>
+                    <option value="hip-dysplasia">Hip Dysplasia</option>
+                    <option value="cataracts">Cataracts</option>
+                </select>
+            </div>
+            <div style="flex:1;">
+                <label>&nbsp;</label>
+                <div style="display:flex;align-items:center;gap:0.5rem;padding-top:8px;">
+                    <input type="checkbox" id="editor-featured" style="width:auto;">
+                    <label style="margin:0;">Featured (sticky)</label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Summary / Excerpt</label>
+            <textarea id="editor-summary" style="min-height:80px;font-family:inherit;" placeholder="Short summary for the blog listing"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Content (Markdown)</label>
+            <p style="font-size:0.8rem;color:#aaa;margin-bottom:0.3rem;">
+                Use <code>[aff:placeholder]</code> to insert affiliate links.
+                <a href="#" onclick="showHelp()" style="color:#ff6b6b;">Help</a>
+            </p>
+            <textarea id="editor-content" placeholder="Write your article in Markdown... Use [aff:placeholder] for affiliate links."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Preview</label>
+            <div id="editor-preview" style="background:#faf8f6;padding:1rem;border-radius:10px;font-size:0.85rem;line-height:1.6;min-height:100px;border:1px solid #eee;"></div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+            <button class="btn btn-outline btn-sm" onclick="previewArticle()">Preview</button>
+            <button class="btn btn-primary" id="editor-save-btn" onclick="saveArticle()">Save Article</button>
+        </div>
+    </div>
+</div>
+
+<!-- Affiliate Link Editor Modal -->
+<div class="modal-overlay" id="affiliate-modal">
+    <div class="modal" style="max-width:500px;">
+        <h2 id="aff-editor-title">New Affiliate Link</h2>
+        <div class="form-group">
+            <label>Placeholder</label>
+            <input id="aff-placeholder" placeholder="e.g. joint-supplement">
+            <div style="font-size:0.8rem;color:#aaa;margin-top:0.3rem;">Used in articles as <code>[aff:joint-supplement]</code></div>
+        </div>
+        <div class="form-group">
+            <label>Anchor Text</label>
+            <input id="aff-anchor" placeholder="e.g. Best Joint Supplement for Dogs">
+        </div>
+        <div class="form-group">
+            <label>Affiliate URL (leave blank to add later)</label>
+            <input id="aff-url" placeholder="https://amzn.to/xxx">
+        </div>
+        <div class="form-group">
+            <label>Related Article (optional)</label>
+            <select id="aff-post"><option value="">None</option></select>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:0.5rem;">
+                <input type="checkbox" id="aff-active" checked style="width:auto;"> Active
+            </label>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="closeAffiliateEditor()">Cancel</button>
+            <button class="btn btn-primary" id="aff-save-btn" onclick="saveAffiliate()">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-overlay" id="confirm-dialog">
+    <div class="confirm-box">
+        <h3 id="confirm-title">Confirm</h3>
+        <p id="confirm-message">Are you sure?</p>
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
+            <button class="btn btn-danger" id="confirm-btn" onclick="executeConfirm()">Delete</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== STATE ==========
+let supabase = null;
+let db = null; // { posts: [], affiliates: [] }
+let editingId = null;
+let editingAffId = null;
+let confirmAction = null;
+let storageType = 'local'; // 'local' or 'supabase'
+let ADMIN_PASS = localStorage.getItem('admin_pass') || 'petfive2024';
+let isLoggedIn = localStorage.getItem('admin_logged_in') === 'true';
+
+// ========== STORAGE ==========
+function getLocalData() {
+    try {
+        return JSON.parse(localStorage.getItem('petfive_data')) || { posts: [], affiliates: [] };
+    } catch { return { posts: [], affiliates: [] }; }
+}
+
+function saveLocalData(data) {
+    localStorage.setItem('petfive_data', JSON.stringify(data));
+}
+
+function generateId() {
+    return Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+}
+
+// ========== SUPABASE CONNECTION ==========
+async function connectSupabase() {
+    const url = document.getElementById('supabase-url').value.trim();
+    const key = document.getElementById('supabase-key').value.trim();
+    if (!url || !key) { showToast('Please enter both URL and Anon Key', 'error'); return; }
+
+    const btn = document.getElementById('connect-btn');
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+
+    try {
+        const { createClient } = supabaseJs;
+        supabase = createClient(url, key);
+
+        // Test connection
+        const { data, error } = await supabase.from('posts').select('id').limit(1);
+        if (error) throw error;
+
+        storageType = 'supabase';
+        localStorage.setItem('supabase_url', url);
+        localStorage.setItem('supabase_key', key);
+        showToast('Connected to Supabase!', 'success');
+        initApp();
+    } catch (e) {
+        showToast('Connection failed: ' + e.message, 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Connect to Database';
+}
+
+function useLocal() {
+    storageType = 'local';
+    db = getLocalData();
+    showToast('Using local storage. Data stays in this browser.', 'success');
+    initApp();
+}
+
+// ========== AUTH ==========
+function initApp() {
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    if (isLoggedIn) { doLogin(true); }
+}
+
+function doLogin(skipCheck) {
+    if (!skipCheck) {
+        const pass = document.getElementById('login-pass').value;
+        if (pass !== ADMIN_PASS) {
+            document.getElementById('login-error').style.display = 'block';
+            return;
+        }
+        document.getElementById('login-error').style.display = 'none';
+    }
+    isLoggedIn = true;
+    localStorage.setItem('admin_logged_in', 'true');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-app').style.display = 'block';
+
+    const label = storageType === 'local' ? 'Local Storage' : 'Supabase';
+    const statusEl = document.getElementById('db-status');
+    document.getElementById('storage-label').textContent = label;
+    statusEl.className = 'status' + (storageType === 'local' ? ' offline' : '');
+    statusEl.textContent = storageType === 'local' ? '&#9679; Offline Mode' : '&#9679; Database Connected';
+
+    loadData();
+    setupTabs();
+    renderDashboard();
+    renderPosts();
+    renderAffiliates();
+}
+
+function logout() {
+    isLoggedIn = false;
+    localStorage.removeItem('admin_logged_in');
+    document.getElementById('admin-app').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('login-pass').value = '';
+}
+
+// ========== DATA LOADING ==========
+async function loadData() {
+    if (storageType === 'local') {
+        db = getLocalData();
+    } else {
+        try {
+            const { data: posts, error: pe } = await supabase.from('posts').select('*').order('published_at', { ascending: false });
+            const { data: affs, error: ae } = await supabase.from('affiliate_links').select('*').order('created_at', { ascending: false });
+            if (pe || ae) throw pe || ae;
+            db = { posts: posts || [], affiliates: affs || [] };
+        } catch (e) {
+            showToast('Error loading data: ' + e.message, 'error');
+            db = getLocalData();
+            storageType = 'local';
+        }
+    }
+}
+
+async function saveData() {
+    if (storageType === 'local') {
+        saveLocalData(db);
+    }
+    // For Supabase, individual operations save immediately
+}
+
+function getPosts() { return db.posts || []; }
+function getAffiliates() { return db.affiliates || []; }
+
+async function supabaseSave(table, data) {
+    if (storageType !== 'supabase') return true;
+    try {
+        const { error } = await supabase.from(table).upsert(data);
+        if (error) throw error;
+        return true;
+    } catch (e) { showToast('Supabase error: ' + e.message, 'error'); return false; }
+}
+
+async function supabaseDelete(table, id) {
+    if (storageType !== 'supabase') return true;
+    try {
+        const { error } = await supabase.from(table).delete().eq('id', id);
+        if (error) throw error;
+        return true;
+    } catch (e) { showToast('Supabase error: ' + e.message, 'error'); return false; }
+}
+
+// ========== TABS ==========
+function setupTabs() {
+    document.querySelectorAll('#admin-tabs a').forEach(a => {
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('#admin-tabs a').forEach(x => x.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(x => x.style.display = 'none');
+            document.getElementById('tab-' + this.dataset.tab).style.display = 'block';
+
+            if (this.dataset.tab === 'dashboard') renderDashboard();
+            if (this.dataset.tab === 'posts') renderPosts();
+            if (this.dataset.tab === 'affiliates') renderAffiliates();
+            if (this.dataset.tab === 'settings') renderSettings();
+        });
+    });
+}
+
+// ========== DASHBOARD ==========
+function renderDashboard() {
+    const posts = getPosts();
+    const affs = getAffiliates();
+    document.getElementById('stat-total').textContent = posts.length;
+    document.getElementById('stat-featured').textContent = posts.filter(p => p.is_featured).length;
+    document.getElementById('stat-arthritis').textContent = posts.filter(p => p.category === 'arthritis').length;
+    document.getElementById('stat-hip').textContent = posts.filter(p => p.category === 'hip-dysplasia').length;
+    document.getElementById('stat-cataracts').textContent = posts.filter(p => p.category === 'cataracts').length;
+    document.getElementById('stat-links').textContent = affs.length;
+
+    const container = document.getElementById('dashboard-posts-table');
+    const recent = posts.slice(0, 5);
+    if (recent.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">&#128221;</div><p>No articles yet. Create your first one!</p></div>';
+    } else {
+        container.innerHTML = '<table><thead><tr><th></th><th>Title</th><th>Category</th><th>Date</th></tr></thead><tbody>' +
+            recent.map(p => {
+                const catLabel = { arthritis: 'Arthritis', 'hip-dysplasia': 'Hip Dysplasia', cataracts: 'Cataracts' } [p.category] || p.category;
+                const catClass = { arthritis: 'tag-arthritis', 'hip-dysplasia': 'tag-hip', cataracts: 'tag-cataracts' } [p.category] || '';
+                return '<tr><td>' + (p.is_featured ? '<span class="featured-star">&#9733;</span>' : '') + '</td><td><strong>' + esc(p.title) + '</strong></td><td><span class="tag ' + catClass + '">' + catLabel + '</span></td><td style="color:#aaa;font-size:0.85rem;">' + formatDate(p.published_at) + '</td></tr>';
+            }).join('') + '</tbody></table>';
+    }
+}
+
+// ========== POSTS ==========
+function renderPosts() {
+    const posts = getPosts();
+    const catFilter = document.getElementById('filter-category').value;
+    const searchFilter = document.getElementById('filter-search').value.toLowerCase();
+
+    let filtered = posts;
+    if (catFilter) filtered = filtered.filter(p => p.category === catFilter);
+    if (searchFilter) filtered = filtered.filter(p => p.title.toLowerCase().includes(searchFilter) || (p.summary || '').toLowerCase().includes(searchFilter));
+
+    const tbody = document.getElementById('posts-table-body');
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>No articles found.</p></div></td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(p => {
+        const c = p.category;
+        const catLabel = { arthritis: 'Arthritis', 'hip-dysplasia': 'Hip Dysplasia', cataracts: 'Cataracts' } [c] || c;
+        const catClass = { arthritis: 'tag-arthritis', 'hip-dysplasia': 'tag-hip', cataracts: 'tag-cataracts' } [c] || '';
+        const affCount = getAffiliates().filter(a => a.post_id === p.id).length;
+        return '<tr>' +
+            '<td>' + (p.is_featured ? '<span class="featured-star">&#9733;</span>' : '') + '</td>' +
+            '<td><strong>' + esc(p.title) + '</strong></td>' +
+            '<td><span class="tag ' + catClass + '">' + catLabel + '</span></td>' +
+            '<td style="color:#aaa;font-size:0.85rem;">' + formatDate(p.published_at) + '</td>' +
+            '<td>' + affCount + '</td>' +
+            '<td><div class="actions">' +
+                '<button class="btn btn-secondary btn-xs" onclick="openEditor(\'' + p.id + '\')">Edit</button>' +
+                '<button class="btn btn-secondary btn-xs" onclick="toggleFeatured(\'' + p.id + '\')">' + (p.is_featured ? 'Unpin' : 'Pin') + '</button>' +
+                '<button class="btn btn-danger btn-xs" onclick="confirmDelete(\'' + p.id + '\')">Del</button>' +
+            '</div></td>' +
+        '</tr>';
+    }).join('');
+}
+
+function openEditor(id) {
+    const modal = document.getElementById('editor-modal');
+    modal.classList.add('open');
+    editingId = id || null;
+
+    const posts = getPosts();
+    if (id) {
+        const post = posts.find(p => p.id === id);
+        if (!post) return;
+        document.getElementById('editor-title').textContent = 'Edit Article';
+        document.getElementById('editor-title-input').value = post.title;
+        document.getElementById('editor-slug').value = post.slug;
+        document.getElementById('editor-category').value = post.category;
+        document.getElementById('editor-featured').checked = post.is_featured || false;
+        document.getElementById('editor-summary').value = post.summary || '';
+        document.getElementById('editor-content').value = post.content || '';
+    } else {
+        document.getElementById('editor-title').textContent = 'New Article';
+        document.getElementById('editor-title-input').value = '';
+        document.getElementById('editor-slug').value = '';
+        document.getElementById('editor-category').value = 'arthritis';
+        document.getElementById('editor-featured').checked = false;
+        document.getElementById('editor-summary').value = '';
+        document.getElementById('editor-content').value = '';
+    }
+    document.getElementById('editor-preview').innerHTML = '';
+}
+
+function closeEditor() {
+    document.getElementById('editor-modal').classList.remove('open');
+    editingId = null;
+}
+
+async function previewArticle() {
+    const content = document.getElementById('editor-content').value;
+    const affs = getAffiliates();
+    let rendered = content
+        .replace(/### (.+)/g, '<h3>$1</h3>')
+        .replace(/## (.+)/g, '<h2>$1</h2>')
+        .replace(/# (.+)/g, '<h1>$1</h1>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/- (.+)/g, '<li>$1</li>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\[aff:([^\]]+)\]/g, function(m, ph) {
+            const aff = affs.find(a => a.placeholder === ph);
+            if (aff && aff.url) return '<a href="' + esc(aff.url) + '" target="_blank" style="color:#4a9eff;">' + esc(aff.anchor_text || ph) + '</a>';
+            return '<span style="color:#e74c3c;">[aff:' + ph + ' (not configured)]</span>';
+        });
+    rendered = '<p>' + rendered + '</p>';
+    document.getElementById('editor-preview').innerHTML = rendered;
+}
+
+async function saveArticle() {
+    const title = document.getElementById('editor-title-input').value.trim();
+    const category = document.getElementById('editor-category').value;
+    const isFeatured = document.getElementById('editor-featured').checked;
+    const summary = document.getElementById('editor-summary').value.trim();
+    const content = document.getElementById('editor-content').value.trim();
+
+    if (!title) { showToast('Title is required', 'error'); return; }
+    if (!content) { showToast('Content is required', 'error'); return; }
+
+    let posts = getPosts();
+    const slug = document.getElementById('editor-slug').value.trim() || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '.html';
+
+    const now = new Date().toISOString();
+
+    if (editingId) {
+        // Update existing
+        const idx = posts.findIndex(p => p.id === editingId);
+        if (idx !== -1) {
+            posts[idx] = { ...posts[idx], title, slug, category, is_featured: isFeatured, summary, content };
+            if (storageType === 'supabase') await supabaseSave('posts', posts[idx]);
+        }
+    } else {
+        // Create new
+        const newPost = {
+            id: generateId(),
+            title,
+            slug: slug,
+            category,
+            is_featured: isFeatured,
+            summary,
+            content,
+            published_at: now,
+            created_at: now
+        };
+        posts.unshift(newPost);
+        if (storageType === 'supabase') await supabaseSave('posts', newPost);
+    }
+
+    if (storageType === 'local') saveLocalData({ posts, affiliates: getAffiliates() });
+    db.posts = posts;
+    closeEditor();
+    renderPosts();
+    renderDashboard();
+    showToast(editingId ? 'Article updated!' : 'Article created!', 'success');
+}
+
+async function toggleFeatured(id) {
+    let posts = getPosts();
+    const idx = posts.findIndex(p => p.id === id);
+    if (idx === -1) return;
+    posts[idx].is_featured = !posts[idx].is_featured;
+    if (storageType === 'supabase') await supabaseSave('posts', posts[idx]);
+    if (storageType === 'local') saveLocalData({ posts, affiliates: getAffiliates() });
+    db.posts = posts;
+    renderPosts();
+    renderDashboard();
+    showToast(posts[idx].is_featured ? 'Pinned as featured!' : 'Unpinned', 'success');
+}
+
+function confirmDelete(id) {
+    document.getElementById('confirm-title').textContent = 'Delete Article';
+    document.getElementById('confirm-message').textContent = 'This will permanently delete this article. Continue?';
+    document.getElementById('confirm-btn').textContent = 'Delete';
+    document.getElementById('confirm-btn').className = 'btn btn-danger';
+    confirmAction = async () => {
+        let posts = getPosts();
+        posts = posts.filter(p => p.id !== id);
+        if (storageType === 'supabase') await supabaseDelete('posts', id);
+        if (storageType === 'local') saveLocalData({ posts, affiliates: getAffiliates() });
+        db.posts = posts;
+        closeConfirm();
+        renderPosts();
+        renderDashboard();
+        showToast('Article deleted', 'success');
+    };
+    document.getElementById('confirm-dialog').classList.add('open');
+}
+
+// ========== AFFILIATES ==========
+function renderAffiliates() {
+    const affs = getAffiliates();
+    const posts = getPosts();
+    const container = document.getElementById('affiliates-list');
+
+    if (affs.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">&#128279;</div><p>No affiliate links yet.</p></div>';
+        return;
+    }
+
+    container.innerHTML = affs.map(a => {
+        const post = posts.find(p => p.id === a.post_id);
+        const statusClass = a.is_active !== false ? 'status-active' : 'status-inactive';
+        const statusText = a.is_active !== false ? 'Active' : 'Inactive';
+        return '<div class="link-item">' +
+            '<div class="info">' +
+                '<div class="placeholder">[aff:' + esc(a.placeholder) + ']</div>' +
+                '<div class="anchor">' + esc(a.anchor_text || 'No anchor text') + '</div>' +
+                '<div class="url">' + (a.url ? esc(a.url) : '<em style="color:#aaa;">URL not set</em>') + '</div>' +
+                (post ? '<div style="font-size:0.8rem;color:#aaa;">In: ' + esc(post.title) + '</div>' : '') +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:0.5rem;">' +
+                '<span class="status-badge ' + statusClass + '">' + statusText + '</span>' +
+                '<div class="link-actions">' +
+                    '<button class="btn btn-secondary btn-xs" onclick="openAffiliateEditor(\'' + a.id + '\')">Edit</button>' +
+                    '<button class="btn btn-danger btn-xs" onclick="confirmDeleteAff(\'' + a.id + '\')">Del</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function openAffiliateEditor(id) {
+    const modal = document.getElementById('affiliate-modal');
+    modal.classList.add('open');
+    editingAffId = id || null;
+
+    // Populate post dropdown
+    const posts = getPosts();
+    const select = document.getElementById('aff-post');
+    select.innerHTML = '<option value="">None</option>' +
+        posts.map(p => '<option value="' + p.id + '">' + esc(p.title) + '</option>').join('');
+
+    if (id) {
+        const affs = getAffiliates();
+        const aff = affs.find(a => a.id === id);
+        if (!aff) return;
+        document.getElementById('aff-editor-title').textContent = 'Edit Affiliate Link';
+        document.getElementById('aff-placeholder').value = aff.placeholder;
+        document.getElementById('aff-anchor').value = aff.anchor_text || '';
+        document.getElementById('aff-url').value = aff.url || '';
+        document.getElementById('aff-post').value = aff.post_id || '';
+        document.getElementById('aff-active').checked = aff.is_active !== false;
+    } else {
+        document.getElementById('aff-editor-title').textContent = 'New Affiliate Link';
+        document.getElementById('aff-placeholder').value = '';
+        document.getElementById('aff-anchor').value = '';
+        document.getElementById('aff-url').value = '';
+        document.getElementById('aff-post').value = '';
+        document.getElementById('aff-active').checked = true;
+    }
+}
+
+function closeAffiliateEditor() {
+    document.getElementById('affiliate-modal').classList.remove('open');
+    editingAffId = null;
+}
+
+async function saveAffiliate() {
+    const placeholder = document.getElementById('aff-placeholder').value.trim();
+    const anchorText = document.getElementById('aff-anchor').value.trim();
+    const url = document.getElementById('aff-url').value.trim();
+    const postId = document.getElementById('aff-post').value;
+    const isActive = document.getElementById('aff-active').checked;
+
+    if (!placeholder) { showToast('Placeholder is required', 'error'); return; }
+
+    let affs = getAffiliates();
+    const now = new Date().toISOString();
+
+    if (editingAffId) {
+        const idx = affs.findIndex(a => a.id === editingAffId);
+        if (idx !== -1) {
+            affs[idx] = { ...affs[idx], placeholder, anchor_text: anchorText, url, post_id: postId, is_active: isActive };
+            if (storageType === 'supabase') await supabaseSave('affiliate_links', affs[idx]);
+        }
+    } else {
+        const newAff = { id: generateId(), placeholder, anchor_text: anchorText, url, post_id: postId, is_active: isActive, created_at: now };
+        affs.push(newAff);
+        if (storageType === 'supabase') await supabaseSave('affiliate_links', newAff);
+    }
+
+    if (storageType === 'local') saveLocalData({ posts: getPosts(), affiliates: affs });
+    db.affiliates = affs;
+    closeAffiliateEditor();
+    renderAffiliates();
+    renderDashboard();
+    showToast(editingAffId ? 'Link updated!' : 'Link created!', 'success');
+}
+
+function confirmDeleteAff(id) {
+    document.getElementById('confirm-title').textContent = 'Delete Affiliate Link';
+    document.getElementById('confirm-message').textContent = 'This will remove this affiliate link from the system. Articles using [aff:...] will show as "not configured". Continue?';
+    document.getElementById('confirm-btn').textContent = 'Delete';
+    confirmAction = async () => {
+        let affs = getAffiliates();
+        affs = affs.filter(a => a.id !== id);
+        if (storageType === 'supabase') await supabaseDelete('affiliate_links', id);
+        if (storageType === 'local') saveLocalData({ posts: getPosts(), affiliates: affs });
+        db.affiliates = affs;
+        closeConfirm();
+        renderAffiliates();
+        renderDashboard();
+        showToast('Link deleted', 'success');
+    };
+    document.getElementById('confirm-dialog').classList.add('open');
+}
+
+// ========== SETTINGS ==========
+function renderSettings() {
+    document.getElementById('settings-db-status').textContent = 'Currently using: ' + (storageType === 'local' ? 'Local Storage (offline)' : 'Supabase Database');
+}
+
+function changeDataSource() {
+    if (storageType === 'local') {
+        document.getElementById('setup-screen').style.display = 'flex';
+        document.getElementById('admin-app').style.display = 'none';
+    } else {
+        useLocal();
+    }
+}
+
+function changePassword() {
+    const newPass = document.getElementById('settings-new-pass').value.trim();
+    if (!newPass || newPass.length < 4) { showToast('Password must be at least 4 characters', 'error'); return; }
+    ADMIN_PASS = newPass;
+    localStorage.setItem('admin_pass', newPass);
+    document.getElementById('settings-new-pass').value = '';
+    showToast('Password updated!', 'success');
+}
+
+function exportData() {
+    const data = { posts: getPosts(), affiliates: getAffiliates(), exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'petfive_backup_' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Data exported!', 'success');
+}
+
+function showHelp() {
+    alert('Markdown Quick Reference:\n\n' +
+        '# Heading 1\n## Heading 2\n### Heading 3\n\n**bold** *italic*\n\n- list item\n\n[aff:your-placeholder] for affiliate links');
+}
+
+// ========== CONFIRM ==========
+function closeConfirm() {
+    document.getElementById('confirm-dialog').classList.remove('open');
+    confirmAction = null;
+}
+
+function executeConfirm() {
+    if (confirmAction) confirmAction();
+}
+
+// ========== UTILS ==========
+function esc(s) {
+    if (!s) return '';
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatDate(d) {
+    if (!d) return '';
+    const date = new Date(d);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function showToast(msg, type) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className = 'toast ' + (type || '');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Auto-generate slug from title
+document.getElementById('editor-title-input').addEventListener('input', function() {
+    if (!editingId) {
+        document.getElementById('editor-slug').value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    }
+});
+
+// ========== AUTO LOGIN CHECK ==========
+// On page load, check if we have saved Supabase credentials
+(function() {
+    const savedUrl = localStorage.getItem('supabase_url');
+    const savedKey = localStorage.getItem('supabase_key');
+    if (savedUrl && savedKey) {
+        document.getElementById('supabase-url').value = savedUrl;
+        document.getElementById('supabase-key').value = savedKey;
+    }
+    if (isLoggedIn) {
+        useLocal();
+    }
+})();
+</script>
+
+</body>
+</html>
