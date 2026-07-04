@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Community | Pet Senior Care Hub</title>
+    <meta name="description" content="Join our senior dog community - share experiences, get support for arthritis, hip dysplasia, and cataracts.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; color: #2c3e50; background: #fafafa; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 18px; }
+        .header { background: linear-gradient(135deg, #fff5f0, #ffe0cc); padding: 1rem 0; }
+        .header-inner { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: 800; }
+        .nav a { margin-left: 1rem; text-decoration: none; color: #2c3e50; font-weight: 600; padding: 7px 14px; border-radius: 30px; }
+        .nav a.highlight { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
+        .hero { background: linear-gradient(160deg, #fff5f0, #ffe8d6, #e8f8f5); padding: 3rem 0; text-align: center; }
+        .hero h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .hero p { font-size: 1rem; color: #5a6c7d; }
+        .community-stats { display: flex; gap: 2rem; justify-content: center; margin: 2rem 0; }
+        .stat { text-align: center; }
+        .stat-num { font-size: 2rem; font-weight: 800; color: #ff6b6b; }
+        .stat-label { font-size: 0.9rem; color: #7a8a9a; }
+        .topics { padding: 3rem 0; }
+        .topics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .topic-card { background: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .topic-card h3 { margin-bottom: 0.5rem; }
+        .posts { padding: 2rem 0; background: white; }
+        .post { padding: 1.5rem; border-bottom: 1px solid #f0f0f0; }
+        .post-title { font-weight: 700; margin-bottom: 0.5rem; }
+        .post-meta { font-size: 0.9rem; color: #aaa; }
+        .footer { background: #2c3e50; color: white; padding: 3rem 0; text-align: center; }
+
+
+        /* Hamburger menu - hidden on desktop */
+        .hamburger { display: none; background: none; border: none; font-size: 1.8rem; cursor: pointer; color: #2c3e50; padding: 4px 10px; }
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: row; justify-content: space-between; align-items: center; position: relative; }
+            .hamburger { display: block; }
+            .nav { display: none; flex-direction: column; position: absolute; top: 100%; right: 0; left: 0; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 1rem; gap: 0.5rem; z-index: 100; border-radius: 0 0 12px 12px; }
+            .nav.open { display: flex; }
+            .nav a { margin-left: 0; text-align: center; padding: 10px; width: 100%; }
+            .hero h1 { font-size: 1.8rem !important; }
+            .hero p { font-size: 0.95rem !important; }
+            .features-grid, .topics-grid { grid-template-columns: 1fr !important; }
+            .community-stats { flex-wrap: wrap; gap: 1rem !important; }
+            .stat-num { font-size: 1.5rem !important; }
+            .container { padding: 0 12px !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-inner">
+                <div class="logo">Pet Senior Care Hub</div>
+                <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
+                <nav class="nav">
+                    <a href="/">Home</a>
+                    <a href="/community.html" class="highlight">Community</a>
+                    <a href="/ai-check.html">AI Check</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Senior Dog Community</h1>
+            <p>Connect with fellow pet parents, share experiences, get real support.</p>
+            <div class="community-stats">
+                <div class="stat">
+                    <div class="stat-num">2,847</div>
+                    <div class="stat-label">Members</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">1.2k</div>
+                    <div class="stat-label">Posts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-num">142</div>
+                    <div class="stat-label">Online Now</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="topics">
+        <div class="container">
+            <div class="topics-grid">
+                <div class="topic-card">
+                    <h3>Arthritis Support</h3>
+                    <p>Joint pain, mobility tips, and treatment discussions</p>
+                    <p style="color: #aaa; font-size: 0.9rem; margin-top: 0.5rem;">438 posts</p>
+                </div>
+                <div class="topic-card">
+                    <h3>Hip Dysplasia</h3>
+                    <p>Surgery recovery, exercises, and daily care</p>
+                    <p style="color: #aaa; font-size: 0.9rem; margin-top: 0.5rem;">296 posts</p>
+                </div>
+                <div class="topic-card">
+                    <h3>Cataract Care</h3>
+                    <p>Vision loss, surgery options, and home adjustments</p>
+                    <p style="color: #aaa; font-size: 0.9rem; margin-top: 0.5rem;">187 posts</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="posts">
+        <div class="container">
+            <h2 style="margin-bottom: 1.5rem;">Recent Discussions</h2>
+            <div class="post">
+                <div class="post-title">Just started glucosamine - any tips?</div>
+                <div class="post-meta">Posted by Margaret T. - 2 hours ago - Arthritis</div>
+            </div>
+            <div class="post">
+                <div class="post-title">Recovery milestones after hip replacement</div>
+                <div class="post-meta">Posted by Dr. Sarah K. - 5 hours ago - Hip Dysplasia</div>
+            </div>
+            <div class="post">
+                <div class="post-title">Has anyone tried laser therapy for cataracts?</div>
+                <div class="post-meta">Posted by Tom H. - 8 hours ago - Cataracts</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Pet Senior Care Hub</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            document.querySelector('.nav').classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
